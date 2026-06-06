@@ -1,4 +1,4 @@
-import 'dart:nativewrappers/_internal/vm/lib/ffi_patch.dart';
+
 
 import 'package:flutter/material.dart';
 
@@ -11,8 +11,10 @@ class Calculadora extends StatefulWidget {
 
 class _CalculadoraState extends State<Calculadora>{
   String operacion = "";
-  String resultado = "14";  
-  Array elements = [ ];
+  String resultado = "";
+  String actualNum = "";  
+  List<String> elements = [];
+  List<String> calculation = [];
 
 
   @override
@@ -68,23 +70,68 @@ class _CalculadoraState extends State<Calculadora>{
   void actionBoton(String value) {
     //print(valor);
     setState(() {
-      operacion += value;
-    });
-    switch (value) {
+      switch (value) {
       case 'CA': 
         operacion = "";
         resultado = "0";
+        actualNum = "";
+        elements.clear();
         return;
       case 'CE':
         operacion = "";
         return;
       case '<-':
-        
+        if (operacion.isNotEmpty){
+          operacion = operacion.substring(0, operacion.length - 1);
+        }
         return;
+        
         case "+":
         case "-":
         case "*":
         case "/":
+          if (actualNum.isNotEmpty){
+            elements.add(actualNum);
+            elements.add(value);
+            actualNum = "";
+            operacion += value;
+          }
+          print(elements);
+
+          break;
+
+          case"=":
+          if(actualNum.isNotEmpty){
+            elements.add(actualNum);
+          }
+
+          calculation = List.from(elements);
+          bool areOperators = true;
+
+          while (areOperators) {
+            areOperators = true;
+
+            for (int i = 0; i < calculation.length; i++) {
+              if (calculation[i] == "*" || calculation[i] == "/"){
+                double a = double.parse(calculation[i - 1]);
+                double b = double.parse(calculation[i + 2]);
+
+                double r = 0;
+
+                if (calculation[i] == "*") {
+                  r = a * b;
+                } else {
+                  r = a / b;
+                }
+
+                calculation.replaceRange(i - 1, i + 2, [r.toString()]);
+
+                areOperators = true;
+
+                break;
+              }
+            }
+          }
 
       break;
 
@@ -92,6 +139,7 @@ class _CalculadoraState extends State<Calculadora>{
       operacion += value;
       actualNum += value;
     }
+    });
   }
 
   Widget boton(String texto) {
